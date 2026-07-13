@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0D0D0D">
+<title>FitPro - 健身训练助手</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --primary: #F97316;
+    --primary-glow: rgba(249,115,22,0.3);
+    --primary-light: #FB923C;
+    --secondary: #22C55E;
+    --success: #22C55E;
+    --warning: #FBBF24;
+    --danger: #EF4444;
+    --bg: #0D0D0D;
+    --bg-elevated: #1A1A1A;
+    --card: #1C1C1E;
+    --card-hover: #242426;
+    --text: #F8FAFC;
+    --text-secondary: #94A3B8;
+    --text2: #94A3B8;
+    --text-muted: #64748B;
+    --separator: #2A2A2E;
+    --border: #2A2A2E;
+    --glass: rgba(28,28,30,0.8);
+    --font-display: 'Barlow Condensed', 'Noto Sans SC', sans-serif;
+    --font: 'Barlow', 'Noto Sans SC', -apple-system, system-ui, sans-serif;
+  }
+  html, body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    height: 100%;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  #app {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    max-width: 480px;
+    margin: 0 auto;
+    background: var(--bg);
+    position: relative;
+  }
+  .page {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 20px;
+    padding-bottom: 100px;
+    display: none;
+    scrollbar-width: none;
+  }
+  .page.active { display: block; animation: pageIn 0.3s ease; }
+  .page::-webkit-scrollbar { display: none; }
+
+  /* Header */
+  .header {
+    font-family: var(--font-display);
+    font-size: 36px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, var(--text) 0%, var(--primary-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header-sub {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+    font-weight: 500;
+  }
+  .subheader {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    margin: 28px 0 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+  }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 12px;
+    border: 1px solid var(--border);
+    transition: all 0.25s ease;
+    cursor: pointer;
+  }
+  .card:hover { background: var(--card-hover); border-color: var(--separator); }
+  .card:active { transform: scale(0.98); }
+  .card-title {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .card-desc {
+    font-size: 14px;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+  .card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+  }
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 100px;
+    background: rgba(249,115,22,0.12);
+    color: var(--primary);
+    margin-right: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .tag.success { background: rgba(34,197,94,0.12); color: var(--success); }
+  .tag.warning { background: rgba(251,191,36,0.12); color: var(--warning); }
+  .tag.danger { background: rgba(239,68,68,0.12); color: var(--danger); }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 16px;
+    padding: 16px 24px;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: var(--font);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+    margin-top: 12px;
+    letter-spacing: 0.3px;
+  }
+  .btn:hover { filter: brightness(1.1); }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 4px 20px var(--primary-glow); }
+  .btn-success { background: var(--success); color: #fff; box-shadow: 0 4px 20px rgba(34,197,94,0.3); }
+  .btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; filter: none; }
+
+  /* Bottom Nav */
+  .tabbar {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    background: var(--glass);
+    backdrop-filter: saturate(180%) blur(24px);
+    -webkit-backdrop-filter: saturate(180%) blur(24px);
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+    z-index: 100;
+  }
+  .tab-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 4px 0;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 10px;
+    font-weight: 600;
+    transition: color 0.25s;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .tab-item.active { color: var(--primary); }
+  .tab-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .tab-icon svg { width: 22px; height: 22px; fill: currentColor; transition: fill 0.25s; }
+
+  /* Filters */
+  .filter-bar {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    margin-bottom: 14px;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+  .filter-bar::-webkit-scrollbar { display: none; }
+  .filter-chip {
+    flex-shrink: 0;
+    padding: 7px 16px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 600;
+    background: var(--card);
+    color: var(--text2);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .filter-chip:hover { border-color: var(--primary); color: var(--primary); }
+  .filter-chip:active { transform: scale(0.95); }
+  .filter-chip.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+    box-shadow: 0 2px 12px var(--primary-glow);
+  }
+
+  /* Exercise image display */
+  .ex-anim {
+    width: 100%;
+    height: 260px;
+    background: linear-gradient(145deg, #1A1A2E 0%, #16213E 50%, #0D0D0D 100%);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .ex-anim img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 20px;
+  }
+
+  /* Form checklist */
+  .form-list {
+    list-style: none;
+  }
+  .form-list li {
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 15px;
+    line-height: 1.5;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    color: var(--text-secondary);
+  }
+  .form-list li::before {
+    content: "";
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    border-radius: 50%;
+    background: rgba(34,197,94,0.15);
+    border: 2px solid var(--success);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .form-list li:last-child { border-bottom: none; }
+
+  /* Workout mode */
+  .workout-panel {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--bg);
+    z-index: 200;
+    display: none;
+    flex-direction: column;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  .workout-panel.active { display: flex; animation: slideUp 0.3s ease; }
+  .workout-header {
+    padding: 20px;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .workout-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+  }
+  .workout-body::-webkit-scrollbar { display: none; }
+  .sets-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin: 20px 0;
+  }
+  .set-box {
+    aspect-ratio: 1;
+    border-radius: 16px;
+    background: var(--card);
+    border: 2px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted);
+    transition: all 0.3s ease;
+    position: relative;
+    text-transform: uppercase;
+  }
+  .set-box.done {
+    background: rgba(34,197,94,0.1);
+    border-color: var(--success);
+    color: var(--success);
+    animation: greenCheck 0.35s ease;
+  }
+  .set-box.done::after {
+    content: "";
+    position: absolute;
+    top: 5px;
+    right: 7px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--success);
+    animation: checkPop 0.4s ease;
+  }
+  .set-box.current {
+    border-color: var(--primary);
+    color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-glow), inset 0 0 20px rgba(249,115,22,0.05);
+  }
+
+  /* Rest timer overlay */
+  .rest-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 300;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .rest-overlay.active { display: flex; animation: fadeIn 0.2s ease; }
+  .rest-card {
+    background: var(--card);
+    border-radius: 28px;
+    padding: 40px 32px;
+    width: 100%;
+    max-width: 340px;
+    text-align: center;
+    border: 1px solid var(--border);
+    box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+    animation: popIn 0.3s ease;
+  }
+  .rest-ring {
+    width: 180px;
+    height: 180px;
+    margin: 0 auto 28px;
+    position: relative;
+  }
+  .rest-ring svg {
+    transform: rotate(-90deg);
+    width: 180px;
+    height: 180px;
+  }
+  .rest-ring-bg { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 10; }
+  .rest-ring-progress {
+    fill: none;
+    stroke: var(--primary);
+    stroke-width: 10;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear;
+    filter: drop-shadow(0 0 8px var(--primary-glow));
+  }
+  .rest-time {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: var(--font-display);
+    font-size: 52px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -2px;
+  }
+  .rest-label {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* Progress */
+  .progress-bar {
+    height: 6px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 10px 0;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    border-radius: 3px;
+    transition: width 0.5s ease;
+  }
+  .workout-progress-bar {
+    height: 4px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .workout-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  /* Plan day cards */
+  .day-card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 18px 20px;
+    margin-bottom: 10px;
+    border-left: 4px solid var(--primary);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    border-top: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .day-card:hover { background: var(--card-hover); }
+  .day-card:active { transform: scale(0.98); }
+  .day-title {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .day-exercises {
+    font-size: 14px;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+
+  /* Stats - Bento style */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .stat-box {
+    background: var(--card);
+    border-radius: 20px;
+    padding: 24px 16px;
+    text-align: center;
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-box::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .stat-box:first-child::before { opacity: 1; }
+  .stat-value {
+    font-family: var(--font-display);
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -1px;
+  }
+  .stat-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Difficulty */
+  .difficulty {
+    display: flex;
+    gap: 4px;
+  }
+  .diff-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+  }
+  .diff-dot.on { background: var(--primary); box-shadow: 0 0 6px var(--primary-glow); }
+
+  /* Plan selector */
+  .plan-selector {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    margin-bottom: 18px;
+    padding-bottom: 4px;
+  }
+  .plan-selector::-webkit-scrollbar { display: none; }
+  .plan-btn {
+    flex-shrink: 0;
+    padding: 10px 20px;
+    border-radius: 14px;
+    background: var(--card);
+    border: 2px solid var(--border);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: var(--font);
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .plan-btn:hover { border-color: var(--primary); }
+  .plan-btn:active { transform: scale(0.95); }
+  .plan-btn.active {
+    border-color: var(--primary);
+    background: rgba(249,115,22,0.1);
+    color: var(--primary);
+    box-shadow: 0 2px 12px var(--primary-glow);
+  }
+
+  /* History */
+  .history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .history-item:last-child { border-bottom: none; }
+  .history-title { font-weight: 600; font-size: 15px; }
+  .history-meta { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+  /* Animations */
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes popIn { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes pageIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes checkPop { 0% { transform: scale(0); } 60% { transform: scale(1.3); } 100% { transform: scale(1); } }
+  @keyframes greenCheck { 0% { opacity: 0; transform: scale(0.5); } 100% { opacity: 1; transform: scale(1); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+  @media (min-width: 481px) {
+    #app { border-left: 1px solid var(--border); border-right: 1px solid var(--border); }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ========== HOME PAGE ========== -->
+  <div class="page active" id="page-home">
+    <div class="header">FitPro</div>
+    <div class="header-sub">你的私人健身训练助手</div>
+    <div class="stat-grid">
+      <div class="stat-box">
+        <div class="stat-value" id="stat-total">0</div>
+        <div class="stat-label">累计训练</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="stat-time">0</div>
+        <div class="stat-label">总分钟</div>
+      </div>
+    </div>
+    <div class="subheader">今日计划</div>
+    <div id="today-plan"></div>
+    <div class="subheader">快速开始</div>
+    <div class="card" onclick="startQuickWorkout()">
+      <div class="card-title">自定义训练</div>
+      <div class="card-desc">从动作库中选择动作开始自由训练</div>
+    </div>
+    <div class="subheader">最近训练</div>
+    <div id="recent-history"></div>
+  </div>
+
+  <!-- ========== EXERCISES PAGE ========== -->
+  <div class="page" id="page-exercises">
+    <div class="header">动作库</div>
+    <div class="filter-bar" id="muscle-filters">
+      <div class="filter-chip active" data-filter="all">全部</div>
+      <div class="filter-chip" data-filter="chest">胸</div>
+      <div class="filter-chip" data-filter="back">背</div>
+      <div class="filter-chip" data-filter="shoulders">肩</div>
+      <div class="filter-chip" data-filter="biceps">二头</div>
+      <div class="filter-chip" data-filter="triceps">三头</div>
+      <div class="filter-chip" data-filter="legs">腿</div>
+      <div class="filter-chip" data-filter="glutes">臀</div>
+      <div class="filter-chip" data-filter="core">腹</div>
+      <div class="filter-chip" data-filter="cardio">有氧</div>
+      <div class="filter-chip" data-filter="fullbody">全身</div>
+    </div>
+    <div id="exercise-list"></div>
+  </div>
+
+  <!-- ========== PLANS PAGE ========== -->
+  <div class="page" id="page-plans">
+    <div class="header">训练计划</div>
+    <div class="plan-selector" id="plan-selector">
+      <button class="plan-btn active" data-plan="0">推/拉/腿+有氧</button>
+      <button class="plan-btn" data-plan="1">上下分化</button>
+      <button class="plan-btn" data-plan="2">PPL进阶</button>
+      <button class="plan-btn" data-plan="3">体脂优化</button>
+      <button class="plan-btn" data-plan="4">新手入门</button>
+      <button class="plan-btn" data-plan="5">自定义</button>
+    </div>
+    <div id="plan-detail"></div>
+  </div>
+
+  <!-- ========== PROFILE PAGE ========== -->
+  <div class="page" id="page-profile">
+    <div class="header">我的</div>
+    <div class="header-sub">训练数据总览</div>
+    <div class="stat-grid">
+      <div class="stat-box">
+        <div class="stat-value" id="profile-total">0</div>
+        <div class="stat-label">训练次数</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="profile-time">0</div>
+        <div class="stat-label">总分钟</div>
+      </div>
+    </div>
+    <div class="subheader">训练历史</div>
+    <div id="full-history"></div>
+    <button class="btn btn-danger" onclick="clearAllData()" style="margin-top:20px;">清除所有数据</button>
+  </div>
+
+  <!-- ========== EXERCISE DETAIL PAGE ========== -->
+  <div class="page" id="page-detail">
+    <div class="card" style="margin-top:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div class="card-title" id="detail-name">动作名称</div>
+        <div style="font-size:13px;color:var(--text2);cursor:pointer;" onclick="backToList()">返回</div>
+      </div>
+      <div class="ex-anim" id="detail-anim"></div>
+      <div class="card-row">
+        <div>
+          <span class="tag" id="detail-muscle">肌肉群</span>
+          <span class="tag" id="detail-diff">难度</span>
+        </div>
+      </div>
+      <div class="card-row" style="margin-top:12px;">
+        <div style="font-size:15px;"><strong>组数：</strong><span id="detail-sets"></span></div>
+        <div style="font-size:15px;"><strong>次数：</strong><span id="detail-reps"></span></div>
+      </div>
+      <div class="card-row">
+        <div style="font-size:15px;"><strong>休息：</strong><span id="detail-rest"></span></div>
+      </div>
+      <div style="margin-top:14px;font-size:15px;line-height:1.6;" id="detail-desc"></div>
+      <div class="subheader" style="margin-top:20px;margin-bottom:10px;font-size:17px;">动作要点</div>
+      <ul class="form-list" id="detail-form"></ul>
+      <button class="btn btn-primary" id="btn-start-exercise" onclick="startSingleExercise()">开始训练</button>
+    </div>
+  </div>
+
+  <!-- ========== WORKOUT PANEL ========== -->
+  <div class="workout-panel" id="workout-panel">
+    <div class="workout-header">
+      <div>
+        <div style="font-size:17px;font-weight:700;" id="wo-name">动作名称</div>
+        <div style="font-size:13px;color:var(--text2);margin-top:2px;" id="wo-progress">第 1 / 7 个动作</div>
+      </div>
+      <div style="font-size:15px;font-weight:600;color:var(--primary);cursor:pointer;" onclick="exitWorkout()">结束</div>
+    </div>
+    <div class="workout-body">
+      <div class="workout-progress-bar"><div class="workout-progress-fill" id="wo-overall-progress" style="width:0%;"></div></div>
+      <div class="ex-anim" id="wo-anim"></div>
+      <div style="text-align:center;margin-bottom:8px;">
+        <div style="font-size:22px;font-weight:700;" id="wo-sets-text">第 1 / 4 组</div>
+        <div style="font-size:14px;color:var(--text2);margin-top:4px;" id="wo-reps-text">目标：6-8 次</div>
+      </div>
+      <div class="sets-grid" id="sets-grid"></div>
+      <button class="btn btn-success" id="btn-complete-set" onclick="completeSet()">✓ 完成第1组</button>
+      <div id="wo-next-area" style="display:none;margin-top:16px;text-align:center;">
+        <div style="font-size:18px;font-weight:600;color:var(--success);margin-bottom:12px;">✓ 动作完成</div>
+        <button class="btn btn-primary" onclick="nextExercise()">下一个动作</button>
+      </div>
+      <div class="card" style="margin-top:16px;">
+        <div class="card-title">动作描述</div>
+        <div class="card-desc" id="wo-desc"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">要点提醒</div>
+        <ul class="form-list" id="wo-form"></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== REST TIMER OVERLAY ========== -->
+  <div class="rest-overlay" id="rest-overlay">
+    <div class="rest-card">
+      <div class="rest-ring">
+        <svg viewBox="0 0 180 180">
+          <circle class="rest-ring-bg" cx="90" cy="90" r="85"/>
+          <circle class="rest-ring-progress" cx="90" cy="90" r="85" stroke-dasharray="534.07" stroke-dashoffset="0" id="rest-progress"/>
+        </svg>
+        <div class="rest-time" id="rest-time">60</div>
+      </div>
+      <div class="rest-label">组间休息</div>
+      <div style="font-size:14px;color:var(--text2);margin-bottom:16px;" id="rest-next">下一组即将开始</div>
+      <button class="btn btn-secondary" onclick="skipRest()">跳过休息</button>
+    </div>
+  </div>
+
+  <!-- ========== WORKOUT COMPLETE ========== -->
+  <div class="workout-panel" id="complete-panel">
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;">
+      <div style="width:80px;height:80px;border-radius:50%;background:rgba(34,197,94,0.1);display:flex;align-items:center;justify-content:center;margin-bottom:24px;border:2px solid var(--success);">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="header" style="font-size:28px;margin-bottom:8px;">训练完成</div>
+      <div style="font-size:16px;color:var(--text-muted);margin-bottom:36px;">坚持就是胜利，下次继续加油</div>
+      <div class="stat-grid" style="width:100%;margin-bottom:32px;">
+        <div class="stat-box">
+          <div class="stat-value" id="complete-time">0</div>
+        <div class="stat-label">用时分钟</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="complete-exercises">0</div>
+        <div class="stat-label">完成动作</div>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="closeComplete()">完成</button>
+    </div>
+  </div>
+
+  <!-- ========== TAB BAR ========== -->
+  <div class="tabbar">
+    <div class="tab-item active" data-tab="home">
+      <div class="tab-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+      <span>首页</span>
+    </div>
+    <div class="tab-item" data-tab="exercises">
+      <div class="tab-icon"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+      <span>动作库</span>
+    </div>
+    <div class="tab-item" data-tab="plans">
+      <div class="tab-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+      <span>计划</span>
+    </div>
+    <div class="tab-item" data-tab="profile">
+      <div class="tab-icon"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+      <span>我的</span>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== DATA ====================
+const exercises = [
+  // chest
+  { id:"chest_01", name:"杠铃卧推", muscleGroup:"chest", difficulty:3, sets:4, reps:"6-8", rest:120, desc:"仰卧凳上正握杠铃下放至胸部后推起", form:["肩胛骨收紧贴凳","杠铃下放至乳头位置","小臂垂直地面","呼气推起吸气下落","臀部不离凳面"], animType:"bench" },
+  { id:"chest_02", name:"哑铃卧推", muscleGroup:"chest", difficulty:2, sets:4, reps:"8-10", rest:120, desc:"持哑铃仰卧从胸部两侧推起", form:["哑铃下放至胸部两侧","推起时轻微内收","保持手腕中立","控制下放速度","顶峰收缩1秒"], animType:"bench2" },
+  { id:"chest_03", name:"上斜哑铃推", muscleGroup:"chest", difficulty:2, sets:3, reps:"8-12", rest:90, desc:"上斜凳30-45度持哑铃推起", form:["凳角30-45度","推至锁骨上方","控制下放","避免耸肩","专注上胸收缩"], animType:"bench2" },
+  { id:"chest_04", name:"下斜俯卧撑", muscleGroup:"chest", difficulty:1, sets:3, reps:"12-15", rest:60, desc:"双脚垫高双手撑地做俯卧撑", form:["双手略宽于肩","身体成直线","下放至胸触地","推起时呼气","核心收紧"], animType:"pushup" },
+  { id:"chest_05", name:"绳索夹胸", muscleGroup:"chest", difficulty:1, sets:3, reps:"12-15", rest:60, desc:"双臂打开从两侧向胸前夹拢", form:["手肘微屈固定","用胸肌力量夹拢","顶峰收缩","控制回放","感受胸肌拉伸"], animType:"fly" },
+  { id:"chest_06", name:"臂屈伸", muscleGroup:"chest", difficulty:2, sets:3, reps:"10-12", rest:60, desc:"双手撑凳边缘屈臂下降", form:["双手撑稳","身体靠近凳边","下降至大臂平行地面","推起时呼气","控制速度"], animType:"dip" },
+  // back
+  { id:"back_01", name:"引体向上", muscleGroup:"back", difficulty:3, sets:4, reps:"5-8", rest:150, desc:"正握单杠拉起至下巴过杠", form:["正握略宽于肩","启动背阔肌","拉至下巴过杠","控制下放至手臂伸直","避免摆动借力"], animType:"pullup" },
+  { id:"back_02", name:"高位下拉", muscleGroup:"back", difficulty:2, sets:4, reps:"8-10", rest:120, desc:"坐姿宽握拉至锁骨", form:["宽握拉杆","挺胸沉肩","拉至锁骨位置","控制回放","背阔肌发力"], animType:"pulldown" },
+  { id:"back_03", name:"杠铃划船", muscleGroup:"back", difficulty:3, sets:4, reps:"6-8", rest:120, desc:"俯身划船拉至腹部", form:["俯身45度","杠铃贴近身体","拉至腹部下沿","肩胛后收","核心稳定"], animType:"row" },
+  { id:"back_04", name:"哑铃划船", muscleGroup:"back", difficulty:2, sets:3, reps:"8-12", rest:90, desc:"单手持哑铃划船拉至髋部", form:["单手支撑","背部平直","拉至髋部","肩胛后收","控制下放"], animType:"row2" },
+  { id:"back_05", name:"绳索划船", muscleGroup:"back", difficulty:1, sets:3, reps:"10-15", rest:60, desc:"坐姿拉绳索至腹部", form:["坐姿挺胸","拉至腹部","肩胛后收","回放时控制","背阔肌发力"], animType:"row3" },
+  { id:"back_06", name:"面拉", muscleGroup:"back", difficulty:1, sets:3, reps:"15-20", rest:60, desc:"拉绳索至面部两侧", form:["绳索高度与眼平","拉向面部两侧","大拇指指向耳后","肩胛后收","控制回放"], animType:"facepull" },
+  { id:"back_07", name:"山羊挺身", muscleGroup:"back", difficulty:1, sets:3, reps:"12-15", rest:60, desc:"固定下半身俯身伸展", form:["髋部贴紧靠垫","身体下放至90度","伸展至身体直线","臀下背发力","避免过度伸展"], animType:"extension" },
+  // shoulders
+  { id:"sho_01", name:"哑铃推肩", muscleGroup:"shoulders", difficulty:2, sets:4, reps:"6-10", rest:120, desc:"坐姿持哑铃推至头顶", form:["坐姿背部贴紧","哑铃于耳侧","垂直推起","避免耸肩","控制下放"], animType:"press" },
+  { id:"sho_02", name:"实力推", muscleGroup:"shoulders", difficulty:3, sets:4, reps:"5-8", rest:150, desc:"站姿杠铃推至头顶", form:["站姿核心收紧","杠铃于锁骨","垂直推起","头略后仰让杠铃通过","身体轻微后仰"], animType:"press2" },
+  { id:"sho_03", name:"阿诺德推举", muscleGroup:"shoulders", difficulty:2, sets:3, reps:"8-12", rest:90, desc:"哑铃从胸前旋转推起", form:["哑铃于胸前","推举同时旋转","掌心朝前完成","控制旋转","全范围运动"], animType:"arnold" },
+  { id:"sho_04", name:"侧平举", muscleGroup:"shoulders", difficulty:1, sets:3, reps:"12-15", rest:60, desc:"双臂侧平举至肩高", form:["手肘微屈","举至肩高","控制下放","避免耸肩","小拇指略高于食指"], animType:"lateral" },
+  { id:"sho_05", name:"前平举", muscleGroup:"shoulders", difficulty:1, sets:3, reps:"12-15", rest:60, desc:"双臂前平举至肩高", form:["交替或同步","举至肩高","控制下放","核心收紧","避免借力"], animType:"frontraise" },
+  { id:"sho_06", name:"反向飞鸟", muscleGroup:"shoulders", difficulty:1, sets:3, reps:"15-20", rest:60, desc:"俯身双臂向两侧打开", form:["俯身至平行","手肘微屈","向两侧打开","肩胛后收","控制回放"], animType:"reardelt" },
+  { id:"sho_07", name:"面拉", muscleGroup:"shoulders", difficulty:1, sets:3, reps:"15-20", rest:60, desc:"拉绳索至面部", form:["绳索高度与眼平","拉向面部","大拇指指向耳后","肩胛后收","控制回放"], animType:"facepull" },
+  // biceps
+  { id:"bic_01", name:"杠铃弯举", muscleGroup:"biceps", difficulty:2, sets:4, reps:"8-10", rest:90, desc:"正握杠铃屈肘", form:["正握与肩同宽","上臂固定","杠铃至下巴","控制下放","避免借力"], animType:"curl" },
+  { id:"bic_02", name:"哑铃弯举", muscleGroup:"biceps", difficulty:1, sets:3, reps:"10-12", rest:60, desc:"交替或同步哑铃弯举", form:["上臂固定身体两侧","旋转手腕举起","控制下放","避免摇摆","顶峰收缩"], animType:"curl2" },
+  { id:"bic_03", name:"锤式弯举", muscleGroup:"biceps", difficulty:1, sets:3, reps:"10-12", rest:60, desc:"中立位握哑铃弯举", form:["中立位握哑铃","上臂固定","举起至肩高","控制下放","专注肱肌"], animType:"hammer" },
+  { id:"bic_04", name:"绳索弯举", muscleGroup:"biceps", difficulty:1, sets:3, reps:"12-15", rest:60, desc:"拉绳索屈肘", form:["上臂固定","拉向面部","保持张力","控制回放","顶峰收缩"], animType:"curl3" },
+  { id:"bic_05", name:"牧师凳弯举", muscleGroup:"biceps", difficulty:1, sets:3, reps:"10-12", rest:60, desc:"上臂固定弯举", form:["上臂贴紧斜板","下放至手臂伸直","弯举至下巴","控制速度","孤立二头"], animType:"preacher" },
+  // triceps
+  { id:"tri_01", name:"绳索下压", muscleGroup:"triceps", difficulty:1, sets:3, reps:"12-15", rest:60, desc:"拉绳索直臂下压", form:["上臂固定身体两侧","手腕锁定","下压至大腿","控制回放","专注三头"], animType:"pushdown" },
+  { id:"tri_02", name:"过头臂屈伸", muscleGroup:"triceps", difficulty:1, sets:3, reps:"10-12", rest:60, desc:"双手持哑铃过头屈伸", form:["双手持哑铃过头","肘部指向天花板","下放至脑后","伸直手臂","控制速度"], animType:"overhead" },
+  { id:"tri_03", name:"法式弯举", muscleGroup:"triceps", difficulty:1, sets:3, reps:"10-12", rest:60, desc:"仰卧屈肘下放哑铃", form:["仰卧双手持哑铃","肘部固定","下放至耳侧","伸直手臂","控制回放"], animType:"french" },
+  { id:"tri_04", name:"窄距卧推", muscleGroup:"triceps", difficulty:2, sets:3, reps:"8-10", rest:90, desc:"窄握杠铃卧推", form:["窄握与肩同宽","下放至胸中部","推起时呼气","控制速度","专注三头发力"], animType:"bench3" },
+  { id:"tri_05", name:"双杠臂屈伸", muscleGroup:"triceps", difficulty:2, sets:3, reps:"8-12", rest:90, desc:"双杠上屈臂下降", form:["双手撑双杠","身体直立","下降至大臂平行","推起至手臂伸直","避免前倾"], animType:"dip2" },
+  // legs
+  { id:"leg_01", name:"杠铃深蹲", muscleGroup:"legs", difficulty:3, sets:4, reps:"5-8", rest:150, desc:"颈后杠铃深蹲", form:["双脚与肩同宽","挺胸核心收紧","下蹲至大腿平行","膝盖对准脚尖","站起时呼气"], animType:"squat" },
+  { id:"leg_02", name:"杯式深蹲", muscleGroup:"legs", difficulty:2, sets:3, reps:"8-12", rest:90, desc:"胸前持哑铃深蹲", form:["双手捧哑铃于胸前","下蹲至大腿平行","背部挺直","膝盖对准脚尖","站起夹臀"], animType:"gobletsquat" },
+  { id:"leg_03", name:"腿举", muscleGroup:"legs", difficulty:2, sets:4, reps:"8-12", rest:120, desc:"腿举机推起", form:["双脚与肩同宽","下放至90度","推起时呼气","不要锁死膝盖","控制回放"], animType:"legpress" },
+  { id:"leg_04", name:"罗马尼亚硬拉", muscleGroup:"legs", difficulty:3, sets:4, reps:"6-8", rest:150, desc:"膝盖微屈髋部后推", form:["双手正握杠铃","膝盖微屈固定","髋部后推","杠铃贴近身体","感受腘绳肌拉伸"], animType:"rdl" },
+  { id:"leg_05", name:"腿弯举", muscleGroup:"legs", difficulty:1, sets:3, reps:"10-12", rest:60, desc:"俯卧弯举小腿", form:["俯卧脚踝固定","弯举小腿至臀部","控制下放","顶峰收缩","专注腘绳肌"], animType:"legcurl" },
+  { id:"leg_06", name:"腿屈伸", muscleGroup:"legs", difficulty:1, sets:3, reps:"12-15", rest:60, desc:"坐姿伸展小腿", form:["坐姿背部贴紧","伸展小腿至水平","控制下放","顶峰收缩","专注股四头肌"], animType:"legext" },
+  { id:"leg_07", name:"箭步走", muscleGroup:"legs", difficulty:2, sets:3, reps:"10-12每腿", rest:90, desc:"交替向前迈步", form:["一步距离下蹲","前膝不超过脚尖","后膝接近地面","躯干直立","交替进行"], animType:"lunge" },
+  { id:"leg_08", name:"提踵", muscleGroup:"legs", difficulty:1, sets:4, reps:"15-20", rest:45, desc:"踮起脚尖", form:["前脚掌站立","踮起至最高","控制下放","感受小腿收缩","可负重增加难度"], animType:"calf" },
+  { id:"leg_09", name:"高脚杯深蹲", muscleGroup:"legs", difficulty:2, sets:3, reps:"8-12", rest:90, desc:"双手持哑铃于胸前深蹲", form:["哑铃竖直于胸前","下蹲至大腿平行","背部挺直","膝盖对准脚尖","站起夹臀"], animType:"gobletsquat" },
+  // glutes
+  { id:"glu_01", name:"臀推", muscleGroup:"glutes", difficulty:2, sets:4, reps:"8-12", rest:120, desc:"肩胛靠凳髋部推起", form:["肩胛骨靠凳","杠铃置于髋部","推起至身体平行","顶峰夹臀","控制下放"], animType:"hipthrust" },
+  { id:"glu_02", name:"臀桥", muscleGroup:"glutes", difficulty:1, sets:3, reps:"12-15", rest:60, desc:"仰卧屈膝顶髋", form:["仰卧双脚踩地","顶髋至身体直线","顶峰夹臀","控制下放","核心收紧"], animType:"glutebridge" },
+  { id:"glu_03", name:"保加利亚分腿蹲", muscleGroup:"glutes", difficulty:3, sets:3, reps:"8-12每腿", rest:120, desc:"后脚放凳上分腿蹲", form:["后脚放凳","前膝不超过脚尖","下蹲至大腿平行","躯干直立","控制速度"], animType:"bulgarian" },
+  { id:"glu_04", name:"单腿臀桥", muscleGroup:"glutes", difficulty:1, sets:3, reps:"12-15每腿", rest:60, desc:"单腿顶髋", form:["仰卧单腿踩地","另一条腿伸直","顶髋至身体直线","顶峰夹臀","控制下放"], animType:"singlebridge" },
+  // core
+  { id:"core_01", name:"卷腹", muscleGroup:"core", difficulty:1, sets:3, reps:"15-20", rest:45, desc:"屈膝卷腹", form:["屈膝双脚踩地","双手轻放耳侧","卷起至肩胛离地","下巴微收","控制下放"], animType:"crunch" },
+  { id:"core_02", name:"平板支撑", muscleGroup:"core", difficulty:1, sets:3, reps:"30-60秒", rest:45, desc:"前臂撑地保持身体直线", form:["前臂撑地","身体成直线","收紧核心","不塌腰不翘臀","均匀呼吸"], animType:"plank" },
+  { id:"core_03", name:"悬垂举腿", muscleGroup:"core", difficulty:2, sets:3, reps:"8-12", rest:60, desc:"悬挂单杠抬腿", form:["正握悬挂","双腿伸直抬起","抬至水平或更高","控制下放","避免摆动"], animType:"legraise" },
+  { id:"core_04", name:"俄罗斯转体", muscleGroup:"core", difficulty:1, sets:3, reps:"20每侧", rest:45, desc:"坐地转体", form:["坐姿屈膝抬脚","双手握持重物","左右转体","核心收紧","控制速度"], animType:"russiantwist" },
+  { id:"core_05", name:"自行车卷腹", muscleGroup:"core", difficulty:1, sets:3, reps:"15每侧", rest:45, desc:"交替肘触膝", form:["仰卧双手放耳侧","对侧肘触膝","双腿交替伸展","核心收紧","控制节奏"], animType:"bicycle" },
+  { id:"core_06", name:"死虫式", muscleGroup:"core", difficulty:1, sets:3, reps:"10每侧", rest:45, desc:"仰卧对侧手脚伸展", form:["仰卧手臂上举","屈膝90度","对侧手脚伸展","腰部贴地","控制速度"], animType:"deadbug" },
+  { id:"core_07", name:"仰卧抬腿", muscleGroup:"core", difficulty:1, sets:3, reps:"12-15", rest:45, desc:"平躺抬腿", form:["仰卧双腿伸直","抬腿至90度","控制下放","腰部贴地","核心收紧"], animType:"legraise2" },
+  // cardio
+  { id:"car_01", name:"爬楼机", muscleGroup:"cardio", difficulty:1, sets:1, reps:"20-30分钟", rest:0, desc:"爬楼机有氧 heart rate 120-140", form:["站稳踏板","全脚掌踩实","膝盖对准脚尖","保持节奏","控制心率"], animType:"stairs" },
+  { id:"car_02", name:"开合跳", muscleGroup:"cardio", difficulty:1, sets:3, reps:"30秒", rest:30, desc:"双脚开合跳", form:["站立开始","跳起双脚分开","双手头顶击掌","落地缓冲","保持节奏"], animType:"jumpingjack" },
+  { id:"car_03", name:"波比跳", muscleGroup:"cardio", difficulty:2, sets:3, reps:"8-12", rest:60, desc:"深蹲俯卧撑跳起", form:["站立下蹲","双手撑地","双脚后跳俯卧撑","收腿跳起","连贯流畅"], animType:"burpee" },
+  { id:"car_04", name:"登山跑", muscleGroup:"cardio", difficulty:1, sets:3, reps:"30秒", rest:30, desc:"平板支撑交替拉膝", form:["平板支撑","交替拉膝至胸前","保持核心稳定","快速交替","控制呼吸"], animType:"mountain" },
+  { id:"car_05", name:"高抬腿", muscleGroup:"cardio", difficulty:1, sets:3, reps:"30秒", rest:30, desc:"原地高抬腿", form:["原地跑步","膝盖抬至髋高","手臂配合摆动","核心收紧","保持节奏"], animType:"highknee" },
+  { id:"car_06", name:"跳绳", muscleGroup:"cardio", difficulty:1, sets:3, reps:"60秒", rest:60, desc:"原地跳绳", form:["双脚并拢","手腕摇绳","前脚掌落地","膝盖微屈","保持节奏"], animType:"jump" },
+  // fullbody
+  { id:"full_01", name:"硬拉", muscleGroup:"fullbody", difficulty:3, sets:4, reps:"3-6", rest:180, desc:"正反握从地面拉起", form:["双脚与肩同宽","杠铃贴近小腿","挺胸沉肩","髋膝同时伸展","站直夹臀"], animType:"deadlift" },
+  { id:"full_02", name:"高翻推举", muscleGroup:"fullbody", difficulty:3, sets:4, reps:"3-5", rest:180, desc:"爆发力翻举再推 overhead", form:["杠铃于地面","爆发翻举至肩","接稳后推举","全身协调","控制下放"], animType:"clean" },
+  { id:"full_03", name:"火箭推", muscleGroup:"fullbody", difficulty:2, sets:3, reps:"8-10", rest:120, desc:"哑铃深蹲同时推举", form:["哑铃于肩","下蹲至大腿平行","站起同时推举","连贯动作","核心稳定"], animType:"thruster" },
+  { id:"full_04", name:"壶铃摆荡", muscleGroup:"fullbody", difficulty:2, sets:4, reps:"15-20", rest:90, desc:"髋部发力摆壶铃", form:["双脚略宽于肩","髋部后推发力","摆至肩高","手臂放松","核心稳定"], animType:"kbswing" }
+];
+
+const plans = [
+  {
+    name: "推/拉/腿+有氧隔日",
+    desc: "最适合大多数人的分化训练，隔日有氧恢复",
+    days: [
+      { name: "Day1 推日", exercises: ["chest_01","chest_02","chest_03","sho_01","sho_04","tri_01","tri_04"] },
+      { name: "Day2 有氧日", exercises: ["car_01"], note: "爬楼机25min" },
+      { name: "Day3 拉日", exercises: ["back_01","back_02","back_03","back_06","bic_01","bic_03"] },
+      { name: "Day4 有氧日", exercises: ["car_01"], note: "爬楼机25min" },
+      { name: "Day5 腿日+核心", exercises: ["leg_01","leg_04","leg_03","leg_07","leg_08","core_02","core_04"] },
+      { name: "Day6 有氧日", exercises: ["car_02","car_04","car_05"], note: "HIIT式有氧20min" },
+      { name: "Day7 休息或拉伸", exercises: [], note: "主动恢复" }
+    ]
+  },
+  {
+    name: "上下分化+有氧",
+    desc: "4力量日/周，适合有一定基础",
+    days: [
+      { name: "Day1 上体A", exercises: ["chest_01","back_01","sho_01","bic_01","tri_01"] },
+      { name: "Day2 有氧日", exercises: ["car_01"], note: "25min" },
+      { name: "Day3 下体A", exercises: ["leg_01","leg_04","glu_01","leg_08","core_02"] },
+      { name: "Day4 有氧日", exercises: ["car_01"], note: "25min" },
+      { name: "Day5 上体B", exercises: ["chest_02","back_03","sho_04","bic_02","tri_02"] },
+      { name: "Day6 下体B或混合有氧", exercises: ["leg_03","leg_07","glu_03","core_04","car_01"], note: "力量+有氧" },
+      { name: "Day7 休息", exercises: [], note: "恢复" }
+    ]
+  },
+  {
+    name: "PPL推拉腿（进阶）",
+    desc: "6天循环，高频率高容量",
+    days: [
+      { name: "Day1 推日", exercises: ["chest_01","chest_02","chest_05","sho_01","sho_04","sho_05","tri_01","tri_04"] },
+      { name: "Day2 拉日", exercises: ["back_01","back_02","back_03","back_06","bic_01","bic_02","bic_03","back_07"] },
+      { name: "Day3 腿日", exercises: ["leg_01","leg_04","leg_03","leg_07","glu_01","leg_08","core_02","core_04"] },
+      { name: "Day4 推日2", exercises: ["chest_03","chest_06","sho_02","sho_03","sho_06","sho_07","tri_02","tri_03"] },
+      { name: "Day5 拉日2", exercises: ["back_04","back_05","bic_04","bic_05","core_01","core_03","core_06","core_07"] },
+      { name: "Day6 腿日2+有氧", exercises: ["leg_02","leg_05","leg_06","leg_09","glu_02","glu_03","glu_04","car_01"], note: "+20min有氧" },
+      { name: "Day7 休息", exercises: [], note: "恢复" }
+    ]
+  },
+  {
+    name: "体脂优化方案",
+    desc: "力量+有氧结合，高效燃脂",
+    days: [
+      { name: "Day1 推日", exercises: ["chest_01","chest_02","sho_01","sho_04","chest_05","tri_01","car_01"], note: "+20min有氧" },
+      { name: "Day2 拉日+腹肌", exercises: ["back_03","back_04","back_06","bic_01","bic_03","core_01","core_02"] },
+      { name: "Day3 腿日+核心", exercises: ["leg_01","leg_04","leg_09","leg_08","core_02","core_04","core_06"] },
+      { name: "Day4 休息/低强度有氧", exercises: ["car_01"], note: "20min,心率110-120" },
+      { name: "Day5 推日2", exercises: ["sho_02","sho_04","sho_05","sho_06","tri_02","tri_03","tri_05"] },
+      { name: "Day6 全身+有氧", exercises: ["full_01","leg_02","chest_04","back_05","car_01"], note: "+20min有氧" },
+      { name: "Day7 主动恢复", exercises: [], note: "拉伸/散步" }
+    ]
+  },
+  {
+    name: "新手入门",
+    desc: "3天/周，全身训练",
+    days: [
+      { name: "Day1 全身A", exercises: ["leg_02","chest_04","back_02","sho_04","bic_02","tri_01","core_01"] },
+      { name: "Day2 休息", exercises: [], note: "恢复" },
+      { name: "Day3 全身B", exercises: ["leg_09","chest_02","back_04","sho_01","bic_01","tri_02","core_02"] },
+      { name: "Day4 休息", exercises: [], note: "恢复" },
+      { name: "Day5 全身C", exercises: ["leg_07","chest_06","back_05","sho_05","bic_03","tri_03","core_04"] },
+      { name: "Day6 有氧", exercises: ["car_02","car_04","car_05"], note: "低强度20min" },
+      { name: "Day7 休息", exercises: [], note: "恢复" }
+    ]
+  },
+  {
+    name: "自定义计划",
+    desc: "从动作库选择动作创建自己的计划",
+    days: [
+      { name: "自定义训练", exercises: [], note: "请在动作库中添加动作" }
+    ],
+    custom: true
+  }
+];
+
+// ==================== EXERCISE IMAGE HELPER ====================
+function getAnimSVG(exId, exName) {
+  return `<img src="assets/${exId}.jpg" alt="${exName}" style="width:100%;height:100%;object-fit:cover;border-radius:20px;">`;
+}
+
+// ==================== STATE ====================
+let currentTab = 'home';
+let currentFilter = 'all';
+let currentPlan = 0;
+let currentExercise = null;
+let workoutQueue = [];
+let currentWorkoutIndex = 0;
+let currentSet = 0;
+let completedSets = [];
+let restTimer = null;
+let restSeconds = 0;
+let restTotal = 0;
+let workoutStartTime = 0;
+let completedExercises = 0;
+
+// ==================== STORAGE ====================
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem('fitness_history') || '[]'); } catch(e) { return []; }
+}
+function saveHistory(h) {
+  localStorage.setItem('fitness_history', JSON.stringify(h));
+}
+function addHistory(record) {
+  const h = getHistory();
+  h.unshift(record);
+  if (h.length > 100) h.pop();
+  saveHistory(h);
+  updateStats();
+}
+function clearAllData() {
+  if (confirm('确定要清除所有训练数据吗？')) {
+    localStorage.removeItem('fitness_history');
+    updateStats();
+    renderHistory();
+  }
+}
+function updateStats() {
+  const h = getHistory();
+  const total = h.length;
+  const mins = h.reduce((s, r) => s + (r.duration || 0), 0);
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-time').textContent = Math.round(mins);
+  document.getElementById('profile-total').textContent = total;
+  document.getElementById('profile-time').textContent = Math.round(mins);
+}
+
+// ==================== NAVIGATION ====================
+function showTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + tab).classList.add('active');
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  if (tab === 'home') { updateStats(); renderTodayPlan(); renderRecentHistory(); }
+  if (tab === 'exercises') renderExercises();
+  if (tab === 'plans') renderPlan();
+  if (tab === 'profile') { updateStats(); renderHistory(); }
+}
+
+document.querySelectorAll('.tab-item').forEach(t => {
+  t.addEventListener('click', () => showTab(t.dataset.tab));
+});
+
+// ==================== HOME ====================
+function renderTodayPlan() {
+  const plan = plans[currentPlan];
+  const dayIndex = (new Date().getDay() + 6) % 7;
+  const day = plan.days[dayIndex];
+  const el = document.getElementById('today-plan');
+  if (!day || day.exercises.length === 0) {
+    el.innerHTML = `<div class="card"><div class="card-title">${day ? day.name : '休息日'}</div><div class="card-desc">${day ? (day.note || '今日休息，可以进行拉伸或低强度有氧') : '休息日'}</div></div>`;
+    return;
+  }
+  const names = day.exercises.map(id => {
+    const ex = exercises.find(e => e.id === id);
+    return ex ? ex.name : id;
+  }).join('、');
+  el.innerHTML = `<div class="card" onclick="startPlanDay(${currentPlan}, ${dayIndex})">
+    <div class="card-title">${day.name}</div>
+    <div class="card-desc">${names}</div>
+    ${day.note ? `<div class="tag warning" style="margin-top:8px;">${day.note}</div>` : ''}
+  </div>`;
+}
+function renderRecentHistory() {
+  const h = getHistory().slice(0, 3);
+  const el = document.getElementById('recent-history');
+  if (h.length === 0) { el.innerHTML = '<div class="card-desc">暂无训练记录</div>'; return; }
+  el.innerHTML = h.map(r => `<div class="history-item">
+    <div><div class="history-title">${r.title}</div><div class="history-meta">${r.date} · ${r.duration}分钟</div></div>
+    <div class="tag success">完成</div>
+  </div>`).join('');
+}
+function startQuickWorkout() {
+  showTab('exercises');
+}
+
+// ==================== EXERCISES ====================
+function renderExercises() {
+  const list = document.getElementById('exercise-list');
+  const filtered = currentFilter === 'all' ? exercises : exercises.filter(e => e.muscleGroup === currentFilter);
+  const groups = {};
+  filtered.forEach(e => {
+    if (!groups[e.muscleGroup]) groups[e.muscleGroup] = [];
+    groups[e.muscleGroup].push(e);
+  });
+  let html = '';
+  for (const [group, items] of Object.entries(groups)) {
+    const labels = { chest:'胸', back:'背', shoulders:'肩', biceps:'二头', triceps:'三头', legs:'腿', glutes:'臀', core:'腹', cardio:'有氧', fullbody:'全身' };
+    html += `<div class="subheader" style="margin-top:8px;">${labels[group] || group}</div>`;
+    html += items.map(e => `<div class="card" onclick="showExercise('${e.id}')">
+      <div class="card-row" style="margin-top:0;">
+        <div>
+          <div class="card-title">${e.name}</div>
+          <div style="margin-top:4px;"><span class="tag">${e.sets}组 x ${e.reps}</span><span class="tag">休息${e.rest}s</span></div>
+        </div>
+        <div class="difficulty">${[1,2,3].map(i => `<div class="diff-dot ${i<=e.difficulty?'on':''}"></div>`).join('')}</div>
+      </div>
+    </div>`).join('');
+  }
+  list.innerHTML = html || '<div class="card-desc">暂无动作</div>';
+}
+document.querySelectorAll('#muscle-filters .filter-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('#muscle-filters .filter-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    currentFilter = chip.dataset.filter;
+    renderExercises();
+  });
+});
+
+function showExercise(id) {
+  const ex = exercises.find(e => e.id === id);
+  if (!ex) return;
+  currentExercise = ex;
+  document.getElementById('detail-name').textContent = ex.name;
+  document.getElementById('detail-muscle').textContent = {chest:'胸',back:'背',shoulders:'肩',biceps:'二头',triceps:'三头',legs:'腿',glutes:'臀',core:'腹',cardio:'有氧',fullbody:'全身'}[ex.muscleGroup] || ex.muscleGroup;
+  document.getElementById('detail-diff').textContent = '难度' + '★'.repeat(ex.difficulty);
+  document.getElementById('detail-sets').textContent = ex.sets + '组';
+  document.getElementById('detail-reps').textContent = ex.reps;
+  document.getElementById('detail-rest').textContent = ex.rest + '秒';
+  document.getElementById('detail-desc').textContent = ex.desc;
+  document.getElementById('detail-form').innerHTML = ex.form.map(f => `<li>${f}</li>`).join('');
+  document.getElementById('detail-anim').innerHTML = getAnimSVG(ex.id, ex.name);
+  document.getElementById('btn-start-exercise').textContent = '开始训练';
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-detail').classList.add('active');
+}
+function backToList() {
+  document.getElementById('page-detail').classList.remove('active');
+  document.getElementById('page-' + currentTab).classList.add('active');
+}
+function startSingleExercise() {
+  if (!currentExercise) return;
+  startWorkout([currentExercise]);
+}
+
+// ==================== PLANS ====================
+function renderPlan() {
+  const plan = plans[currentPlan];
+  let html = `<div class="card"><div class="card-title">${plan.name}</div><div class="card-desc">${plan.desc}</div></div>`;
+  html += plan.days.map((d, i) => {
+    const names = d.exercises.map(id => {
+      const ex = exercises.find(e => e.id === id);
+      return ex ? ex.name : id;
+    }).join('、') || (d.note || '休息');
+    return `<div class="day-card" onclick="startPlanDay(${currentPlan}, ${i})">
+      <div class="day-title">${d.name}</div>
+      <div class="day-exercises">${names}</div>
+      ${d.note && d.exercises.length ? `<div class="tag warning" style="margin-top:6px;">${d.note}</div>` : ''}
+    </div>`;
+  }).join('');
+  document.getElementById('plan-detail').innerHTML = html;
+}
+document.querySelectorAll('#plan-selector .plan-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#plan-selector .plan-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentPlan = parseInt(btn.dataset.plan);
+    renderPlan();
+    renderTodayPlan();
+  });
+});
+function startPlanDay(planIdx, dayIdx) {
+  const day = plans[planIdx].days[dayIdx];
+  if (!day || day.exercises.length === 0) { alert('今日休息'); return; }
+  const queue = day.exercises.map(id => exercises.find(e => e.id === id)).filter(Boolean);
+  if (queue.length === 0) return;
+  startWorkout(queue);
+}
+
+// ==================== WORKOUT ====================
+function startWorkout(queue) {
+  workoutQueue = queue;
+  currentWorkoutIndex = 0;
+  workoutStartTime = Date.now();
+  completedExercises = 0;
+  document.getElementById('workout-panel').classList.add('active');
+  document.getElementById('complete-panel').classList.remove('active');
+  loadExerciseInWorkout();
+}
+
+function loadExerciseInWorkout() {
+  const ex = workoutQueue[currentWorkoutIndex];
+  if (!ex) { finishWorkout(); return; }
+  currentSet = 0;
+  completedSets = [];
+  document.getElementById('wo-name').textContent = ex.name;
+  document.getElementById('wo-progress').textContent = `第 ${currentWorkoutIndex + 1} / ${workoutQueue.length} 个动作`;
+  const overallPct = Math.round((currentWorkoutIndex / workoutQueue.length) * 100);
+  document.getElementById('wo-overall-progress').style.width = overallPct + '%';
+  document.getElementById('wo-sets-text').textContent = `第 1 / ${ex.sets} 组`;
+  document.getElementById('wo-reps-text').textContent = `目标：${ex.reps} 次`;
+  document.getElementById('wo-desc').textContent = ex.desc;
+  document.getElementById('wo-form').innerHTML = ex.form.map(f => `<li>${f}</li>`).join('');
+  document.getElementById('wo-anim').innerHTML = getAnimSVG(ex.id, ex.name);
+  document.getElementById('wo-next-area').style.display = 'none';
+  document.getElementById('btn-complete-set').style.display = 'inline-flex';
+  document.getElementById('btn-complete-set').disabled = false;
+  document.getElementById('btn-complete-set').textContent = `✓ 完成第1组`;
+  renderSetsGrid();
+}
+
+function renderSetsGrid() {
+  const ex = workoutQueue[currentWorkoutIndex];
+  const grid = document.getElementById('sets-grid');
+  grid.innerHTML = '';
+  for (let i = 0; i < ex.sets; i++) {
+    const div = document.createElement('div');
+    div.className = 'set-box' + (completedSets[i] ? ' done' : '') + (i === currentSet && !completedSets[i] ? ' current' : '');
+    div.textContent = (i + 1) + '组';
+    grid.appendChild(div);
+  }
+}
+
+function completeSet() {
+  const ex = workoutQueue[currentWorkoutIndex];
+  completedSets[currentSet] = true;
+  renderSetsGrid();
+  currentSet++;
+  if (currentSet >= ex.sets) {
+    document.getElementById('btn-complete-set').style.display = 'none';
+    document.getElementById('wo-next-area').style.display = 'block';
+    completedExercises++;
+    if (currentWorkoutIndex < workoutQueue.length - 1) {
+      // auto show next after short delay if rest is 0
+      if (ex.rest === 0) {
+        setTimeout(() => nextExercise(), 800);
+      }
+    } else {
+      setTimeout(() => finishWorkout(), 800);
+    }
+  } else {
+    document.getElementById('wo-sets-text').textContent = `第 ${currentSet + 1} / ${ex.sets} 组`;
+    document.getElementById('btn-complete-set').textContent = `✓ 完成第${currentSet + 1}组`;
+    if (ex.rest > 0) {
+      startRestTimer(ex.rest);
+    }
+  }
+}
+
+function startRestTimer(seconds) {
+  restTotal = seconds;
+  restSeconds = seconds;
+  const overlay = document.getElementById('rest-overlay');
+  overlay.classList.add('active');
+  updateRestDisplay();
+  if (restTimer) clearInterval(restTimer);
+  restTimer = setInterval(() => {
+    restSeconds--;
+    updateRestDisplay();
+    if (restSeconds <= 0) {
+      clearInterval(restTimer);
+      overlay.classList.remove('active');
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+    }
+  }, 1000);
+}
+
+function updateRestDisplay() {
+  document.getElementById('rest-time').textContent = restSeconds;
+  const circumference = 2 * Math.PI * 85;
+  const offset = circumference * (restSeconds / restTotal);
+  document.getElementById('rest-progress').style.strokeDashoffset = offset;
+}
+
+function skipRest() {
+  if (restTimer) clearInterval(restTimer);
+  document.getElementById('rest-overlay').classList.remove('active');
+}
+
+function nextExercise() {
+  currentWorkoutIndex++;
+  if (currentWorkoutIndex >= workoutQueue.length) {
+    finishWorkout();
+  } else {
+    loadExerciseInWorkout();
+  }
+}
+
+function finishWorkout() {
+  document.getElementById('workout-panel').classList.remove('active');
+  const duration = Math.max(1, Math.round((Date.now() - workoutStartTime) / 60000));
+  const title = workoutQueue.length > 1 ? '计划训练' : (workoutQueue[0] ? workoutQueue[0].name : '训练');
+  addHistory({ title, date: new Date().toLocaleDateString('zh-CN'), duration, exercises: completedExercises });
+  document.getElementById('complete-time').textContent = duration;
+  document.getElementById('complete-exercises').textContent = completedExercises;
+  document.getElementById('complete-panel').classList.add('active');
+}
+
+function exitWorkout() {
+  if (confirm('确定要结束当前训练吗？')) {
+    if (restTimer) clearInterval(restTimer);
+    document.getElementById('rest-overlay').classList.remove('active');
+    document.getElementById('workout-panel').classList.remove('active');
+    if (completedExercises > 0) {
+      const duration = Math.max(1, Math.round((Date.now() - workoutStartTime) / 60000));
+      addHistory({ title: '中断训练', date: new Date().toLocaleDateString('zh-CN'), duration, exercises: completedExercises });
+    }
+  }
+}
+
+function closeComplete() {
+  document.getElementById('complete-panel').classList.remove('active');
+  showTab('home');
+}
+
+// ==================== PROFILE ====================
+function renderHistory() {
+  const h = getHistory();
+  const el = document.getElementById('full-history');
+  if (h.length === 0) { el.innerHTML = '<div class="card-desc">暂无训练记录</div>'; return; }
+  el.innerHTML = h.map((r, i) => `<div class="history-item">
+    <div><div class="history-title">${r.title}</div><div class="history-meta">${r.date} · ${r.duration}分钟 · ${r.exercises || 0}个动作</div></div>
+    <div class="tag success">完成</div>
+  </div>`).join('');
+}
+
+// ==================== INIT ====================
+updateStats();
+renderTodayPlan();
+renderRecentHistory();
+renderExercises();
+renderPlan();
+</script>
+</body>
+</html>
